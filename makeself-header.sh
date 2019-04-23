@@ -89,11 +89,14 @@ MS_diskspace()
 
 MS_dd()
 {
-    blocks=\`expr \$3 / 1024\`
-    bytes=\`expr \$3 % 1024\`
-    dd if="\$1" ibs=\$2 skip=1 obs=1024 conv=sync 2> /dev/null | \\
-    { test \$blocks -gt 0 && dd ibs=1024 obs=1024 count=\$blocks ; \\
-      test \$bytes  -gt 0 && dd ibs=1 obs=1024 count=\$bytes ; } 2> /dev/null
+    dd if="\$1" bs=1 skip=\$2 conv=sync 2> /dev/null
+
+    # blocks=\`expr \$3 / 1024\`
+    # bytes=\`expr \$3 % 1024\`
+    # dd if="\$1" ibs=\$2 skip=1 obs=1024 conv=sync 2> /dev/null | { \\
+    #     test \$blocks -gt 0 && dd ibs=1024 obs=1024 count=\$blocks ; \\
+    #     test \$bytes  -gt 0 && dd ibs=1 obs=1024 count=\$bytes ; \\
+    # } 2> /dev/null
 }
 
 MS_dd_Progress()
@@ -193,6 +196,7 @@ MS_Check()
 		MS_Printf "Verifying archive integrity..."
     fi
     offset=\`head -n $SKIP "\$1" | wc -c | tr -d " "\`
+    [ -z "\$offset" ] && offset=$PRE_SKIP
     verb=\$2
     i=1
     for s in \$filesizes
@@ -356,6 +360,7 @@ EOLSM
     --list)
 	echo Target directory: \$targetdir
 	offset=\`head -n $SKIP "\$0" | wc -c | tr -d " "\`
+    [ -z "\$offset" ] && offset=$PRE_SKIP
 	for s in \$filesizes
 	do
 	    MS_dd "\$0" \$offset \$s | MS_Decompress | UnTAR t
@@ -365,6 +370,7 @@ EOLSM
 	;;
 	--tar)
 	offset=\`head -n $SKIP "\$0" | wc -c | tr -d " "\`
+    [ -z "\$offset" ] && offset=$PRE_SKIP
 	arg1="\$2"
     if ! shift 2; then MS_Help; exit 1; fi
 	for s in \$filesizes
@@ -534,6 +540,7 @@ if test x"\$SETUP_NOCHECK" != x1; then
     MS_Check "\$0"
 fi
 offset=\`head -n $SKIP "\$0" | wc -c | tr -d " "\`
+[ -z "\$offset" ] && offset=$PRE_SKIP
 
 if test x"\$verbose" = xy; then
 	MS_Printf "About to extract $USIZE KB in \$tmpdir ... Proceed ? [Y/n] "
