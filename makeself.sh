@@ -143,6 +143,7 @@ MS_Usage()
     echo "    --nocrc            : Don't calculate a CRC for archive"
     echo "    --sha256           : Compute a SHA256 checksum for the archive"
     echo "    --header file      : Specify location of the header script"
+    echo "    --nowctr           : Target platform no wc/tr utils"
     echo "    --follow           : Follow the symlinks in the archive"
     echo "    --noprogress       : Do not show the progress during the decompression"
     echo "    --nox11            : Disable automatic spawn of a xterm"
@@ -359,6 +360,10 @@ do
 	NOCRC=y
 	shift
 	;;
+    --nowctr)
+    NOWCTR=y
+    shift
+    ;;
     --append)
 	APPEND=y
 	shift
@@ -677,6 +682,20 @@ else
 		fi
 	fi
 fi
+
+#### fixup target platform no wc/tr
+if test "$NOWCTR" = y; then
+    filesizes="$fsize"
+    CRCsum="$crcsum"
+    MD5sum="$md5sum"
+    SHAsum="$shasum"
+
+    . "$HEADER"
+
+    PRE_SKIP=`head -n $SKIP $archname | wc -c | tr -d " "`
+    PRE_SKIP=`expr $PRE_SKIP + 20`
+fi
+
 
 if test "$APPEND" = y; then
     mv "$archname" "$archname".bak || exit
