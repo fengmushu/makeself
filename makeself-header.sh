@@ -89,14 +89,14 @@ MS_diskspace()
 
 MS_dd()
 {
-    dd if="\$1" bs=1 skip=\$2 conv=sync 2> /dev/null
+    blocks=\`expr \$3 / 1024\`
+    bytes=\`expr \$3 % 1024\`
+    dd if="\$1" ibs=\$2 skip=1 obs=1024 conv=sync 2> /dev/null | { \\
+        test \$blocks -gt 0 && dd ibs=1024 obs=1024 count=\$blocks ; \\
+        test \$bytes  -gt 0 && dd ibs=1 obs=1024 count=\$bytes ; \\
+    } 2> /dev/null
 
-    # blocks=\`expr \$3 / 1024\`
-    # bytes=\`expr \$3 % 1024\`
-    # dd if="\$1" ibs=\$2 skip=1 obs=1024 conv=sync 2> /dev/null | { \\
-    #     test \$blocks -gt 0 && dd ibs=1024 obs=1024 count=\$blocks ; \\
-    #     test \$bytes  -gt 0 && dd ibs=1 obs=1024 count=\$bytes ; \\
-    # } 2> /dev/null
+    # dd if="\$1" bs=1 skip=\$2 conv=sync 2> /dev/null
 }
 
 MS_dd_Progress()
